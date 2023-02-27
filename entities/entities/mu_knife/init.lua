@@ -1,3 +1,6 @@
+local IsValid = IsValid
+local Angle = Angle
+local Vector = Vector
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
@@ -13,7 +16,7 @@ function ENT:Initialize()
 	self:SetSolid( SOLID_VPHYSICS )
 	self:DrawShadow(false)
 
-	// don't do impact damage
+	-- don't do impact damage
 	-- self:SetTrigger(true)
 	-- self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 
@@ -36,6 +39,7 @@ function ENT:Think()
 		self.RemoveNext = false
 		self:Remove()
 	end
+
 	if self.HitSomething && self:GetVelocity():Length2D() < 1.5 then
 		self.HitSomething = false
 		local knife = ents.Create("weapon_mu_knife")
@@ -50,6 +54,7 @@ function ENT:Think()
 	end
 
 	self:NextThink(CurTime())
+
 	return true
 end
 

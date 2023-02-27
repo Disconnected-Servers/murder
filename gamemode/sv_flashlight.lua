@@ -1,11 +1,13 @@
+local FrameTime = FrameTime
+pairs = pairs
+local player_GetAll = player.GetAll
 
 util.AddNetworkString("flashlight_charge")
-
 
 function GM:FlashlightThink()
 	if self.FlashlightBattery:GetFloat() > 0 then
 		local decay = FrameTime() / self.FlashlightBattery:GetFloat()
-		for k, ply in pairs(player.GetAll()) do
+		for k, ply in pairs(player_GetAll()) do
 			if ply:Alive() then
 				if ply:FlashlightIsOn() then
 					ply:SetFlashlightCharge(math.Clamp(ply:GetFlashlightCharge() - decay, 0, 1))
@@ -23,6 +25,7 @@ function GM:PlayerSwitchFlashlight(ply, turningOn)
 			return false
 		end
 	end
+
 	return true
 end
 
@@ -39,6 +42,7 @@ function PlayerMeta:SetFlashlightCharge(charge)
 			self:Flashlight(false)
 		end
 	end
+
 	net.Start("flashlight_charge")
 	net.WriteFloat(self.FlashlightCharge)
 	net.Send(self)

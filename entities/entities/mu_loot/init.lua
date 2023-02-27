@@ -1,3 +1,5 @@
+local IsValid
+
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
@@ -24,9 +26,11 @@ function ENT:Use(ply)
 		phys:Wake()
 		phys:EnableMotion(true)
 	end
+
 	hook.Call("PlayerPickupLoot", GAMEMODE, ply, self)
 end
 
 function ENT:Think()
+	
 end
 

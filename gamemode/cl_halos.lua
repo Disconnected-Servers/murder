@@ -1,3 +1,5 @@
+local table_insert = table.insert
+local SysTime = SysTime
 
 local mat_Copy		= Material( "pp/copy" )
 local mat_Add		= Material( "pp/add" )
@@ -24,7 +26,7 @@ local function Add( ents, colors, blurx, blury, passes, add, ignorez )
 		IgnoreZ = ignorez
 	}
 
-	table.insert( List, t )
+	table_insert( List, t )
 
 end
 local function Render( entry )
@@ -130,7 +132,7 @@ end
 
 hook.Add( "PostDrawEffects", "RenderMurderHalos", function()
 
-	hook.Run( "PreDrawMurderHalos", Add)
+	hook.Run("PreDrawMurderHalos", Add)
 
 	if ( #List == 0 ) then return end
 	
@@ -149,7 +151,7 @@ end )
 -- 		local entry = {}
 -- 		entry.ent = v
 -- 		entry.color = v:EntIndex() % 3
--- 		table.insert(t, entry)
+-- 		table_insert(t, entry)
 -- 	end
 -- 	Add(t, {Color(220, 0, 0), Color(0,220,0), Color(0,0,255)}, 5, 5, 5, true, false)
 -- end)

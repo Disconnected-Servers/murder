@@ -2,6 +2,12 @@
 local WRandom = {}
 WRandom.__index = WRandom
 
+local setmetatable = setmetatable
+local table_insert = table.insert
+local pairs = pairs
+local math_random = math.random
+
+
 function WeightedRandom()
 	local tab = {}
 	tab.items = {}
@@ -13,7 +19,7 @@ function WRandom:Add(weight, item)
 	local t = {}
 	t.weight = weight
 	t.item = item
-	table.insert(self.items, t)
+	table_insert(self.items, t)
 end
 
 function WRandom:Roll()
@@ -21,7 +27,7 @@ function WRandom:Roll()
 	for k, item in pairs(self.items) do
 		total = total + item.weight
 	end
-	local c = math.random(total - 1)
+	local c = math_random(total - 1)
 	local cur = 0
 	for k, item in pairs(self.items) do
 		cur = cur + item.weight

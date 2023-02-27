@@ -2,6 +2,7 @@ if SERVER then
 	AddCSLuaFile()
 else
 	function SWEP:DrawWeaponSelection( x, y, w, h, alpha )
+		
 	end
 end
 
@@ -54,6 +55,7 @@ function SWEP:DoPrimaryAttackEffect(stats)
 	bullet.Tracer = 1
 	bullet.Force = self.Primary.Force or ((self.Primary.Damage or 1) * 3)
 	bullet.Damage = stats.damage or 1
+	
 	self.Owner:FireBullets(bullet)
 end
 	

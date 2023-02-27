@@ -1,3 +1,7 @@
+local IsValid = IsValid
+local isvector = isvector
+local Vector = Vector
+
 -- Proxy Example:
 --
 --	Proxies
@@ -14,19 +18,19 @@ matproxy.Add(
 
 	init	=	function( self, mat, values )
 
-		// Store the name of the variable we want to set
+		-- Store the name of the variable we want to set
 		self.ResultTo = values.resultvar
 
 	end,
 
 	bind	=	function( self, mat, ent )
 
-		if ( !IsValid( ent ) ) then return end
+		if ( not IsValid( ent ) ) then return end
 
-		// retarded garry shit
+		-- retarded garry shit
 		-- if ( ent:IsRagdoll() ) then
 		-- 	ent = ent:GetRagdollOwner()
-		-- 	if ( !IsValid( ent ) ) then return end
+		-- 	if ( not IsValid( ent ) ) then return end
 		-- end
 
 		if ( ent.GetPlayerColor ) then

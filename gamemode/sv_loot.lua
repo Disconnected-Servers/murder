@@ -1,38 +1,42 @@
-local PlayerMeta = FindMetaTable("Player")
-local EntityMeta = FindMetaTable("Entity")
+local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
-if !LootItems then
+local IsValid = IsValid
+local pairs = pairs
+
+if not LootItems then
 	LootItems = {}
 end
 
-local LootModels = {}
-LootModels["breenbust"] = "models/props_combine/breenbust.mdl"
-LootModels["huladoll"] = "models/props_lab/huladoll.mdl"
-LootModels["beer1"] = "models/props_junk/glassbottle01a.mdl"
-LootModels["beer2"] = "models/props_junk/glassjug01.mdl"
-LootModels["cactus"] = "models/props_lab/cactus.mdl"
-LootModels["lamp"] = "models/props_lab/desklamp01.mdl"
-LootModels["clipboard"] = "models/props_lab/clipboard.mdl"
-LootModels["suitcase1"] = "models/props_c17/suitcase_passenger_physics.mdl"
-LootModels["suitcase2"] = "models/props_c17/suitcase001a.mdl"
-LootModels["battery"] = "models/items/car_battery01.mdl"
-LootModels["turtle"] = "models/props/de_tides/vending_turtle.mdl"
-LootModels["toothbrush"] = "models/props/cs_militia/toothbrushset01.mdl"
-LootModels["circlesaw"] = "models/props/cs_militia/circularsaw01.mdl"
-LootModels["axe"] = "models/props/cs_militia/axe.mdl"
-LootModels["skull"] = "models/Gibs/HGIBS.mdl"
-LootModels["baby"] = "models/props_c17/doll01.mdl"
-LootModels["antlionhead"] = "models/Gibs/Antlion_gib_Large_2.mdl"
-LootModels["briefcase"] = "models/props_c17/BriefCase001a.mdl"
-LootModels["breenclock"] = "models/props_combine/breenclock.mdl"
-LootModels["sawblade"] = "models/props_junk/sawblade001a.mdl"
-LootModels["wrench"] = "models/props_c17/tools_wrench01a.mdl"
-LootModels["consolebox"] = "models/props_c17/consolebox01a.mdl"
-LootModels["cashregister"] = "models/props_c17/cashregister01a.mdl"
-LootModels["bananabunch"] = "models/props/cs_italy/bananna_bunch.mdl"
-LootModels["banana"] = "models/props/cs_italy/bananna.mdl"
-LootModels["orange"] = "models/props/cs_italy/orange.mdl"
-LootModels["familyphoto"] = "models/props_lab/frame002a.mdl"
+local LootModels = {
+	["breenbust"] = "models/props_combine/breenbust.mdl",
+	["huladoll"] = "models/props_lab/huladoll.mdl",
+	["beer1"] = "models/props_junk/glassbottle01a.mdl",
+	["beer2"] = "models/props_junk/glassjug01.mdl",
+	["cactus"] = "models/props_lab/cactus.mdl",
+	["lamp"] = "models/props_lab/desklamp01.mdl",
+	["clipboard"] = "models/props_lab/clipboard.mdl",
+	["suitcase1"] = "models/props_c17/suitcase_passenger_physics.mdl",
+	["suitcase2"] = "models/props_c17/suitcase001a.mdl",
+	["battery"] = "models/items/car_battery01.mdl",
+	["turtle"] = "models/props/de_tides/vending_turtle.mdl",
+	["toothbrush"] = "models/props/cs_militia/toothbrushset01.mdl",
+	["circlesaw"] = "models/props/cs_militia/circularsaw01.mdl",
+	["axe"] = "models/props/cs_militia/axe.mdl",
+	["skull"] = "models/Gibs/HGIBS.mdl",
+	["baby"] = "models/props_c17/doll01.mdl",
+	["antlionhead"] = "models/Gibs/Antlion_gib_Large_2.mdl",
+	["briefcase"] = "models/props_c17/BriefCase001a.mdl",
+	["breenclock"] = "models/props_combine/breenclock.mdl",
+	["sawblade"] = "models/props_junk/sawblade001a.mdl",
+	["wrench"] = "models/props_c17/tools_wrench01a.mdl",
+	["consolebox"] = "models/props_c17/consolebox01a.mdl,"
+	["cashregister"] = "models/props_c17/cashregister01a.mdl",
+	["bananabunch"] = "models/props/cs_italy/bananna_bunch.mdl",
+	["banana"] = "models/props/cs_italy/bananna.mdl",
+	["orange"] = "models/props/cs_italy/orange.mdl",
+	["familyphoto"] = "models/props_lab/frame002a.mdl",
+}
 
 local FruitModels = {
 	"models/props/cs_italy/bananna_bunch.mdl",
@@ -47,6 +51,7 @@ util.AddNetworkString("SetLoot")
 function GM:LoadLootData() 
 	local mapName = game.GetMap()
 	local jason = file.ReadDataAndContent("murder/" .. mapName .. "/loot.txt")
+	
 	if jason then
 		local tbl = util.JSONToTable(jason)
 		LootItems = tbl
@@ -89,7 +94,7 @@ end
 function GM:LootThink()
 	if self:GetRound() == 1 then
 
-		if !self.LastSpawnLoot || self.LastSpawnLoot < CurTime() then
+		if not self.LastSpawnLoot or self.LastSpawnLoot < CurTime() then
 			self.LastSpawnLoot = CurTime() + 12
 
 			local data = table.Random(LootItems)
@@ -102,17 +107,17 @@ end
 
 function GM:SaveLootData()
 
-	// ensure the folders are there
-	if !file.Exists("murder/","DATA") then
+	-- ensure the folders are there
+	if not file.Exists("murder/","DATA") then
 		file.CreateDir("murder")
 	end
 
 	local mapName = game.GetMap()
-	if !file.Exists("murder/" .. mapName .. "/","DATA") then
+	if not file.Exists("murder/" .. mapName .. "/","DATA") then
 		file.CreateDir("murder/" .. mapName)
 	end
 
-	// JSON!
+	-- JSONnot 
 	local jason = util.TableToJSON(LootItems)
 	file.Write("murder/" .. mapName .. "/loot.txt", jason)
 end
@@ -127,13 +132,14 @@ function GM:AddLootItem(ent)
 end
 
 local function giveMagnum(ply)
-	// if they already have the gun, drop the first and give them a new one
+	-- if they already have the gun, drop the first and give them a new one
 	if ply:HasWeapon("weapon_mu_magnum") then
 		ply:DropWeapon(ply:GetWeapon("weapon_mu_magnum"))
 	end
+
 	if ply:GetTKer() then
-		// if they are penalised, drop the gun on the floor
-		ply.TempGiveMagnum = true // temporarily allow them to pickup the gun
+		-- if they are penalised, drop the gun on the floor
+		ply.TempGiveMagnum = true -- temporarily allow them to pickup the gun
 		ply:Give("weapon_mu_magnum")
 		ply:DropWeapon(ply:GetWeapon("weapon_mu_magnum"))
 	else
@@ -145,10 +151,11 @@ end
 function GM:PlayerPickupLoot(ply, ent)
 	ply.LootCollected = ply.LootCollected + 1
 
-	if !ply:GetMurderer() then
+	if not ply:GetMurderer() then
 		if ply.LootCollected == 5 then
 			giveMagnum(ply)
 		end
+
 		if ply.LootCollected % 15 == 0 then
 			giveMagnum(ply)
 		end
@@ -162,12 +169,13 @@ function GM:PlayerPickupLoot(ply, ent)
 	net.Send(ply)
 end
 
-function PlayerMeta:GetLootCollected()
+function PLAYER:GetLootCollected()
 	return self.LootCollected
 end
 
-function PlayerMeta:SetLootCollected(loot)
+function PLAYER:SetLootCollected(loot)
 	self.LootCollected = loot
+
 	net.Start("SetLoot")
 	net.WriteUInt(self.LootCollected, 32)
 	net.Send(self)
@@ -176,11 +184,12 @@ end
 local function getLootPrintString(data, plyPos) 
 	local str = math.Round(data.pos.x) .. "," .. math.Round(data.pos.y) .. "," .. math.Round(data.pos.z) .. " " .. math.Round(data.pos:Distance(plyPos) / 12) .. "ft"
 	str = str .. " " .. data.model
+	
 	return str
 end
 
 concommand.Add("mu_loot_add", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (model)")
@@ -190,12 +199,12 @@ concommand.Add("mu_loot_add", function (ply, com, args, full)
 	local mdl = args[1]
 
 	local name = args[1]:lower()
-	if name == "rand" || name == "random" then
+	if name == "rand" or name == "random" then
 		mdl = table.Random(LootModels)
 	elseif name == "fruit" then
 		mdl = table.Random(FruitModels)
-	elseif !name:find("%.mdl$") then
-		if !LootModels[name] then
+	elseif not name:find("%.mdl$") then
+		if not LootModels[name] then
 			ply:ChatPrint("Invalid model alias " .. name)
 			return
 		end
@@ -226,7 +235,7 @@ concommand.Add("mu_loot_add", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_loot_list", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 0 then
 		ply:ChatPrint("Too few args ()")
@@ -241,7 +250,7 @@ concommand.Add("mu_loot_list", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_loot_closest", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 0 then
 		ply:ChatPrint("Too few args ()")
@@ -255,7 +264,7 @@ concommand.Add("mu_loot_closest", function (ply, com, args, full)
 
 	local closest
 	for k, data in pairs(LootItems) do
-		if !closest || (LootItems[closest].pos:Distance(ply:GetPos()) > data.pos:Distance(ply:GetPos())) then
+		if not closest or (LootItems[closest].pos:Distance(ply:GetPos()) > data.pos:Distance(ply:GetPos())) then
 			closest = k
 		end
 	end
@@ -264,7 +273,7 @@ concommand.Add("mu_loot_closest", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_loot_remove", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (key)")
@@ -272,7 +281,7 @@ concommand.Add("mu_loot_remove", function (ply, com, args, full)
 	end
 
 	local key = tonumber(args[1]) or 0
-	if !LootItems[key] then
+	if not LootItems[key] then
 		ply:ChatPrint("Invalid key, position inexists")
 		return
 	end
@@ -285,7 +294,7 @@ concommand.Add("mu_loot_remove", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_loot_adjustpos", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 0 then
 		ply:ChatPrint("Too few args ()")
@@ -294,14 +303,16 @@ concommand.Add("mu_loot_adjustpos", function (ply, com, args, full)
 
 	local key
 	local ent = ply:GetEyeTrace().Entity
-	if IsValid(ent) && ent:GetClass() == "mu_loot" && ent.LootData then
+
+	if IsValid(ent) and ent:GetClass() == "mu_loot" and ent.LootData then
 		for k,v in pairs(LootItems) do
 			if v == ent.LootData then
 				key = k
 			end
 		end
 	end
-	if !key then
+	
+	if not key then
 		ply:ChatPrint("Not a loot item")
 		return
 	end
@@ -315,13 +326,13 @@ concommand.Add("mu_loot_adjustpos", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_loot_respawn", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	GAMEMODE:SpawnLoot()
 end)
 
 concommand.Add("mu_loot_models_list", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	ply:ChatPrint("Loot models")
 	for alias, model in pairs(LootModels) do

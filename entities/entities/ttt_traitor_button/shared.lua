@@ -2,7 +2,7 @@ ENT.Type = "anim"
 ENT.Base = "base_anim"
 
 function ENT:SetupDataTables()
-	// this is a ridiculous amount of network vars
+	-- this is a ridiculous amount of network vars
 	self:NetworkVar("Float", 0, "Delay")
 	self:NetworkVar("Float", 1, "NextUseTime")
 	self:NetworkVar("Bool", 0, "Locked")

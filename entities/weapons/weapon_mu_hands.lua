@@ -1,3 +1,8 @@
+local IsValid = IsValid
+local Vector = Vector
+local Angle = Angle
+
+
 if SERVER then
 	AddCSLuaFile()
 else
@@ -37,7 +42,7 @@ end
 
 function SWEP:CalcViewModelView(vm, opos, oang, pos, ang)
 	
-	// iron sights
+	-- iron sights
 	local pos2 = Vector(-35, 0, 0)
 	addangle(ang, Angle(-90, 0, 0))
 	pos2:Rotate(ang)
@@ -53,7 +58,7 @@ local pickupWhiteList = {
 
 if SERVER then
 	function SWEP:CanPickup(ent)
-		if ent:IsWeapon() || ent:IsPlayer() || ent:IsNPC() then return false end
+		if ent:IsWeapon() or ent:IsPlayer() or ent:IsNPC() then return false end
 		
 		local class = ent:GetClass()
 		if pickupWhiteList[class] then return true end
@@ -67,7 +72,7 @@ function SWEP:SecondaryAttack()
 		self:SetCarrying()
 		local tr = self.Owner:GetEyeTraceNoCursor()
 
-		if IsValid(tr.Entity) && self:CanPickup(tr.Entity) then
+		if IsValid(tr.Entity) and self:CanPickup(tr.Entity) then
 			self:SetCarrying(tr.Entity, tr.PhysicsBone)
 			self:ApplyForce()
 		end
@@ -83,6 +88,7 @@ function SWEP:ApplyForce()
 		local len = vec:Length()
 		if len > 40 then
 			self:SetCarrying()
+
 			return
 		end
 
@@ -115,7 +121,7 @@ end
 
 function SWEP:Think()
 	self.BaseClass.Think(self)
-	if IsValid(self.Owner) && self.Owner:KeyDown(IN_ATTACK2) then
+	if IsValid(self.Owner) and self.Owner:KeyDown(IN_ATTACK2) then
 		if IsValid(self.CarryEnt) then
 			self:ApplyForce()
 		end
@@ -127,12 +133,14 @@ end
 function SWEP:PrimaryAttack()
 	if SERVER then
 		if IsValid(self.Owner) then
-			// Disabled until https://github.com/Facepunch/garrysmod-issues/issues/2668 is fixed
-			-- if self.Owner:HasWeapon("weapon_mu_knife") then
-			-- 	self.Owner:SelectWeapon("weapon_mu_knife")
-			-- elseif self.Owner:HasWeapon("weapon_mu_magnum") then
-			-- 	self.Owner:SelectWeapon("weapon_mu_magnum")
-			-- end
+			-- Disabled until https:--github.com/Facepunch/garrysmod-issues/issues/2668 is fixed
+			-- fixed as of Oct 4, 2019
+
+			if self.Owner:HasWeapon("weapon_mu_knife") then
+				self.Owner:SelectWeapon("weapon_mu_knife")
+			elseif self.Owner:HasWeapon("weapon_mu_magnum") then
+				self.Owner:SelectWeapon("weapon_mu_magnum")
+			end
 		end
 	end
 end

@@ -1,21 +1,27 @@
-local PlayerMeta = FindMetaTable("Player")
-local EntityMeta = FindMetaTable("Entity")
+local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
-if !PlayerMeta.GetRagdollEntityOld then
-	PlayerMeta.GetRagdollEntityOld = PlayerMeta.GetRagdollEntity
+local IsValid = IsValid
+
+if not PLAYER.GetRagdollEntityOld then
+	PLAYER.GetRagdollEntityOld = PLAYER.GetRagdollEntity
 end
-function PlayerMeta:GetRagdollEntity()
+
+function PLAYER:GetRagdollEntity()
 	local ent = self:GetNWEntity("DeathRagdoll")
+	
 	if IsValid(ent) then
 		return ent
 	end
+
 	return self:GetRagdollEntityOld()
 end
 
-if !PlayerMeta.GetRagdollOwnerOld then
-	PlayerMeta.GetRagdollOwnerOld = PlayerMeta.GetRagdollOwner
+if not PLAYER.GetRagdollOwnerOld then
+	PLAYER.GetRagdollOwnerOld = PLAYER.GetRagdollOwner
 end
-function EntityMeta:GetRagdollOwner()
+
+function ENTITY:GetRagdollOwner()
 	local ent = self:GetNWEntity("RagdollOwner")
 	if IsValid(ent) then
 		return ent

@@ -1,4 +1,3 @@
-
 include('shared.lua')
 
 function ENT:Initialize()
@@ -15,7 +14,6 @@ function ENT:Think()
 	local client = LocalPlayer()
 
 	if self.NextPart < CurTime() then
-
 		if client:GetPos():Distance(pos) > 1000 then return end
 
 		self.Emitter:SetPos(pos)
@@ -32,7 +30,7 @@ function ENT:Think()
 		particle:SetRoll( 0 )
 		particle:SetRollDelta( 0 )
 		particle:SetColor( 0, 0, 0 )
-		//particle:SetGravity( Vector( 0, 0, 10 ) )
+		--particle:SetGravity( Vector( 0, 0, 10 ) )
 	end
 end
 

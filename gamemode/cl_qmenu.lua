@@ -1,5 +1,16 @@
-local ments
+local ScrH = ScrH
+local ScrW = ScrW
+local gui_MousePos = gui.MousePos
+local math_min = math.min
+local math_sqrt = math.sqrt
+local math_acos = math.acos
+local math_asin = math.asin
+local math_floor = math.floor
+local math_pi = math.pi
+local math_cos = math.cos
+local pairs = pairs
 
+local ments
 local radialOpen = false
 local prevSelected, prevSelectedVertex
 
@@ -16,37 +27,39 @@ function GM:CloseRadialMenu()
 end
 
 local function getSelected()
-	local mx, my = gui.MousePos()
+	local mx, my = gui_MousePos()
 	local sw,sh = ScrW(), ScrH()
 	local total = #ments
-	local w = math.min(sw * 0.45, sh * 0.45)
+	local w = math_min(sw * 0.45, sh * 0.45)
 	local h = w
 	local sx, sy = sw / 2, sh / 2
 	local x2,y2 = mx - sx, my - sy
 	local ang = 0
-	local dis = math.sqrt(x2 ^ 2 + y2 ^ 2)
+	local dis = math_sqrt(x2 ^ 2 + y2 ^ 2)
 	if dis / w <= 1 then
-		if y2 <= 0 && x2 <= 0 then
-			ang = math.acos(x2 / dis)
-		elseif x2 > 0 && y2 <= 0 then
-			ang = -math.asin(y2 / dis)
-		elseif x2 <= 0 && y2 > 0 then
-			ang = math.asin(y2 / dis) + math.pi
+		if y2 <= 0 and x2 <= 0 then
+			ang = math_acos(x2 / dis)
+		elseif x2 > 0 and y2 <= 0 then
+			ang = -math_asin(y2 / dis)
+		elseif x2 <= 0 and y2 > 0 then
+			ang = math_asin(y2 / dis) + math.pi
 		else
-			ang = math.pi * 2 - math.acos(x2 / dis)
+			ang = math.pi * 2 - math_acos(x2 / dis)
 		end
-		return math.floor((1 - (ang - math.pi / 2 - math.pi / total) / (math.pi * 2) % 1) * total) + 1
+
+		return math_floor((1 - (ang - math.pi / 2 - math.pi / total) / (math.pi * 2) % 1) * total) + 1
 	end
 end
 
 function GM:RadialMousePressed(code, vec)
 	if radialOpen then
 		local selected = getSelected()
-		if selected && selected > 0 && code == MOUSE_LEFT then
-			if selected && ments[selected] then
+		if selected and selected > 0 and code == MOUSE_LEFT then
+			if selected and ments[selected] then
 				RunConsoleCommand("mu_taunt", ments[selected].Code)
 			end
 		end
+
 		self:CloseRadialMenu()
 	end
 end
@@ -60,7 +73,7 @@ local function addElement(transCode, code)
 end
 
 concommand.Add("+menu", function (client, com, args, full)
-	if client:Alive() && client:Team() == 2 then
+	if client:Alive() and client:Team() == 2 then
 		elements = {}
 		addElement("Help", "help")
 		addElement("Funny", "funny")
@@ -88,18 +101,18 @@ function GM:DrawRadialMenu()
 	if radialOpen then
 		local sw,sh = ScrW(), ScrH()
 		local total = #ments
-		local w = math.min(sw * 0.45, sh * 0.45)
+		local w = math_min(sw * 0.45, sh * 0.45)
 		local h = w
 		local sx, sy = sw / 2, sh / 2
 
 		local selected = getSelected() or -1
 
 
-		if !circleVertex then
+		if not circleVertex then
 			circleVertex = {}
 			local max = 50
 			for i = 0, max do
-				local vx, vy = math.cos((math.pi * 2) * i / max), math.sin((math.pi * 2) * i / max)
+				local vx, vy = math_cos((math.pi * 2) * i / max), math.sin((math.pi * 2) * i / max)
 
 				table.insert(circleVertex, {x = sx + w* 1 * vx, y= sy + h* 1 * vy})
 			end
@@ -107,7 +120,7 @@ function GM:DrawRadialMenu()
 
 		surface.SetTexture(tex)
 		local defaultTextCol = color_white
-		if selected <= 0 || selected ~= selected then
+		if selected <= 0 or selected ~= selected then
 			surface.SetDrawColor(20,20,20,180)
 		else
 			surface.SetDrawColor(20,20,20,120)
@@ -119,34 +132,33 @@ function GM:DrawRadialMenu()
 		local add2 = math.pi * 1.5 - math.pi / total
 
 		for k,ment in pairs(ments) do
-			local x,y = math.cos((k - 1) / total * math.pi * 2 + math.pi * 1.5), math.sin((k - 1) / total * math.pi * 2 + math.pi * 1.5)
+			local x,y = math_cos((k - 1) / total * math.pi * 2 + math.pi * 1.5), math.sin((k - 1) / total * math.pi * 2 + math.pi * 1.5)
 
-			local lx, ly = math.cos((k - 1) / total * math.pi * 2 + add), math.sin((k - 1) / total * math.pi * 2 + add)
+			local lx, ly = math_cos((k - 1) / total * math.pi * 2 + add), math.sin((k - 1) / total * math.pi * 2 + add)
 
 			local textCol = defaultTextCol
 			if selected == k then
 				local vertexes = prevSelectedVertex
 
-				if prevSelected != selected then
+				if prevSelected ~= selected then
 					prevSelected = selected
 					vertexes = {}
 					prevSelectedVertex = vertexes
-					local lx2, ly2 = math.cos((k - 1) / total * math.pi * 2 + add2), math.sin((k - 1) / total * math.pi * 2 + add2)
+					local lx2, ly2 = math_cos((k - 1) / total * math.pi * 2 + add2), math.sin((k - 1) / total * math.pi * 2 + add2)
 
 					table.insert(vertexes, {x = sx, y = sy})
 
 					table.insert(vertexes, {x = sx + w* 1 * lx2, y= sy + h* 1 * ly2})
 
-					local max = math.floor(50 / total)
+					local max = math_floor(50 / total)
 					for i = 0, max do
 						local addv = (add - add2) * i / max + add2
-						local vx, vy = math.cos((k - 1) / total * math.pi * 2 + addv), math.sin((k - 1) / total * math.pi * 2 + addv)
+						local vx, vy = math_cos((k - 1) / total * math.pi * 2 + addv), math.sin((k - 1) / total * math.pi * 2 + addv)
 
 						table.insert(vertexes, {x = sx + w* 1 * vx, y= sy + h* 1 * vy})
 					end
 
 					table.insert(vertexes, {x = sx + w* 1 * lx, y= sy + h* 1 * ly})
-
 				end
 
 				surface.SetTexture(tex)

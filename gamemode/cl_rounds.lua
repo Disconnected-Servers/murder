@@ -1,7 +1,11 @@
+local IsValid = IsValid
+local LocalPlayer = LocalPlayer
+
 
 GM.RoundStage = 0
 GM.LootCollected = 0
 GM.RoundSettings = {}
+
 if GAMEMODE then
 	GM.RoundStage = GAMEMODE.RoundStage
 	GM.LootCollected = GAMEMODE.LootCollected
@@ -20,10 +24,10 @@ net.Receive("SetRound", function (length)
 
 	GAMEMODE.RoundSettings = {}
 	local settings = net.ReadUInt(8)
-	if settings != 0 then
-		GAMEMODE.RoundSettings.ShowAdminsOnScoreboard = net.ReadUInt(8) != 0
-		GAMEMODE.RoundSettings.AdminPanelAllowed = net.ReadUInt(8) != 0
-		GAMEMODE.RoundSettings.ShowSpectateInfo = net.ReadUInt(8) != 0
+	if settings ~= 0 then
+		GAMEMODE.RoundSettings.ShowAdminsOnScoreboard = net.ReadUInt(8) ~= 0
+		GAMEMODE.RoundSettings.AdminPanelAllowed = net.ReadUInt(8) ~= 0
+		GAMEMODE.RoundSettings.ShowSpectateInfo = net.ReadUInt(8) ~= 0
 	end
 
 	if r == GAMEMODE.Round.RoundStarting then
@@ -48,6 +52,7 @@ net.Receive("DeclareWinner" , function (length)
 	data.murdererColor = net.ReadVector()
 	data.murdererName = net.ReadString()
 	if IsValid(data.murderer) then
+
 	end
 
 	data.collectedLoot = {}
@@ -60,6 +65,7 @@ net.Receive("DeclareWinner" , function (length)
 		if IsValid(t.player) then
 			t.playerName = t.player:Nick()
 		end
+		
 		t.count = net.ReadUInt(32)
 		t.playerColor = net.ReadVector()
 		t.playerBystanderName = net.ReadString()

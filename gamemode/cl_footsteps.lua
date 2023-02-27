@@ -1,3 +1,14 @@
+local EyePos = EyePos
+local EyeAngles = EyeAngles
+local math_Clamp = math.Clamp
+local CurTime = CurTime
+local pairs = pairs
+local pcall = pcall
+local table_insert = table.insert
+local LocalPlayer = LocalPlayer
+local IsValid = IsValid
+local util_TraceLine = util.TraceLine
+
 GM.FootstepMaxLifeTime = CreateClientConVar( "mu_footstep_maxlifetime", 30, true, true )
 
 local FootSteps = {}
@@ -16,8 +27,10 @@ local maxDistance = 600 ^ 2
 local function renderfoot(self)
 	cam.Start3D(EyePos(), EyeAngles())
 	render.SetMaterial( footMat )
+
 	local pos = EyePos()
-	local lifeTime = math.Clamp(self.FootstepMaxLifeTime:GetInt(), 0, 30)
+	local lifeTime = math_Clamp(self.FootstepMaxLifeTime:GetInt(), 0, 30)
+
 	for k, footstep in pairs(FootSteps) do
 		if footstep.curtime + lifeTime > CurTime() then
 			if (footstep.pos - EyePos()):LengthSqr() < maxDistance then
@@ -27,15 +40,15 @@ local function renderfoot(self)
 			FootSteps[k] = nil
 		end
 	end
+
 	cam.End3D()
 end
 
 function GM:DrawFootprints()
 
-
 	local errored, retval = pcall(renderfoot, self)
 
-	if ( !errored ) then
+	if ( not errored ) then
 		ErrorNoHalt( retval )
 	end
 
@@ -44,19 +57,21 @@ end
 function GM:AddFootstep(ply, pos, ang) 
 	ang.p = 0
 	ang.r = 0
+
 	local fpos = pos
 	if ply.LastFoot then
 		fpos = fpos + ang:Right() * 5
 	else
 		fpos = fpos + ang:Right() * -5
 	end
-	ply.LastFoot = !ply.LastFoot
+
+	ply.LastFoot = not ply.LastFoot
 
 	local trace = {}
 	trace.start = fpos
 	trace.endpos = trace.start + Vector(0,0,-10)
 	trace.filter = ply
-	local tr = util.TraceLine(trace)
+	local tr = util_TraceLine(trace)
 
 	if tr.Hit then
 
@@ -69,21 +84,21 @@ function GM:AddFootstep(ply, pos, ang)
 		tbl.normal = tr.HitNormal
 		local col = ply:GetPlayerColor()
 		tbl.col = Color(col.x * 255, col.y * 255, col.z * 255)
-		table.insert(FootSteps, tbl)
+
+		table_insert(FootSteps, tbl)
 	end
 end
 
 function GM:FootStepsFootstep(ply, pos, foot, sound, volume, filter)
-
-	if ply != LocalPlayer() then return end
-
-	if !self:CanSeeFootsteps() then return end
+	if ply ~= LocalPlayer() then return end
+	if not self:CanSeeFootsteps() then return end
 
 	self:AddFootstep(ply, pos, ply:GetAimVector():Angle())
 end
 
 function GM:CanSeeFootsteps()
-	if self:GetAmMurderer() && LocalPlayer():Alive() then return true end
+	if self:GetAmMurderer() and LocalPlayer():Alive() then return true end
+
 	return false
 end
 
@@ -96,11 +111,9 @@ net.Receive("add_footstep", function ()
 	local pos = net.ReadVector()
 	local ang = net.ReadAngle()
 
-	if !IsValid(ply) then return end
-
+	if not IsValid(ply) then return end
 	if ply == LocalPlayer() then return end
-
-	if !GAMEMODE:CanSeeFootsteps() then return end
+	if not GAMEMODE:CanSeeFootsteps() then return end
 
 	GAMEMODE:AddFootstep(ply, pos, ang)
 end)

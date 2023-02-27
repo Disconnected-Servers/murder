@@ -1,8 +1,9 @@
 util.AddNetworkString("Spawns_View")
 util.AddNetworkString("Spawns_ViewChange")
 
+local pairs = pairs
 
-if !TeamSpawns then
+if not TeamSpawns then
 	TeamSpawns = {}
 	TeamSpawns['spawns'] = {}
 end
@@ -17,7 +18,7 @@ end
 
 local function networkChange(listName)
 	local spawns = TeamSpawns[listName]
-	if !spawns then return end
+	if not spawns then return end
 	for k, ply in pairs(player.GetAll()) do
 		if ply.SpawnsVisualise == listName then
 			net.Start("Spawns_ViewChange")
@@ -40,21 +41,21 @@ end
 
 function GM:SaveSpawns()
 
-	// ensure the folders are there
-	if !file.Exists("murder/","DATA") then
+	-- ensure the folders are there
+	if not file.Exists("murder/","DATA") then
 		file.CreateDir("murder")
 	end
 
 	local mapName = game.GetMap()
-	if !file.Exists("murder/" .. mapName .. "/","DATA") then
+	if not file.Exists("murder/" .. mapName .. "/","DATA") then
 		file.CreateDir("murder/" .. mapName)
 	end
 
-	if !file.Exists("murder/" .. mapName .. "/spawns/","DATA") then
+	if not file.Exists("murder/" .. mapName .. "/spawns/","DATA") then
 		file.CreateDir("murder/" .. mapName .. "/spawns")
 	end
 
-	// JSON!
+	-- JSONnot 
 	for listName, spawnList in pairs(TeamSpawns) do
 		local jason = util.TableToJSON(spawnList)
 		file.Write("murder/" .. mapName .. "/spawns/" .. listName .. ".txt", jason)
@@ -66,7 +67,7 @@ local function getPosPrintString(pos, plyPos)
 end
 
 concommand.Add("mu_spawn_counts", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	for k, v in pairs(TeamSpawns) do
 		ply:ChatPrint("Spawns: " .. k .. " count " .. table.Count(v))
@@ -74,7 +75,7 @@ concommand.Add("mu_spawn_counts", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_spawn_add", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (spawnList)")
@@ -82,7 +83,7 @@ concommand.Add("mu_spawn_add", function (ply, com, args, full)
 	end
 
 	local spawnList = TeamSpawns[args[1]]
-	if !spawnList then
+	if not spawnList then
 		ply:ChatPrint("Invalid list")
 		return
 	end
@@ -96,7 +97,7 @@ concommand.Add("mu_spawn_add", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_spawn_list", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (spawnList)")
@@ -104,7 +105,7 @@ concommand.Add("mu_spawn_list", function (ply, com, args, full)
 	end
 
 	local spawnList = TeamSpawns[args[1]]
-	if !spawnList then
+	if not spawnList then
 		ply:ChatPrint("Invalid list")
 		return
 	end
@@ -116,7 +117,7 @@ concommand.Add("mu_spawn_list", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_spawn_closest", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (spawnList)")
@@ -124,7 +125,7 @@ concommand.Add("mu_spawn_closest", function (ply, com, args, full)
 	end
 
 	local spawnList = TeamSpawns[args[1]]
-	if !spawnList then
+	if not spawnList then
 		ply:ChatPrint("Invalid list")
 		return
 	end
@@ -136,11 +137,11 @@ concommand.Add("mu_spawn_closest", function (ply, com, args, full)
 
 	local closest
 	for k, pos in pairs(spawnList) do
-		if !closest || (spawnList[closest]:Distance(ply:GetPos()) > pos:Distance(ply:GetPos())) then
+		if not closest or (spawnList[closest]:Distance(ply:GetPos()) > pos:Distance(ply:GetPos())) then
 			closest = k
 		end
 	end
-	if !closest then
+	if not closest then
 		ply:ChatPrint("No closest spawn")
 		return
 	end
@@ -149,7 +150,7 @@ concommand.Add("mu_spawn_closest", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_spawn_remove", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 2 then
 		ply:ChatPrint("Too few args (spawnList, key)")
@@ -157,7 +158,7 @@ concommand.Add("mu_spawn_remove", function (ply, com, args, full)
 	end
 
 	local spawnList = TeamSpawns[args[1]]
-	if !spawnList then
+	if not spawnList then
 		ply:ChatPrint("Invalid list")
 		return
 	end
@@ -166,18 +167,18 @@ concommand.Add("mu_spawn_remove", function (ply, com, args, full)
 	if args[2] == "closest" then
 		local closest
 		for k, pos in pairs(spawnList) do
-			if !closest || (spawnList[closest]:Distance(ply:GetPos()) > pos:Distance(ply:GetPos())) then
+			if not closest or (spawnList[closest]:Distance(ply:GetPos()) > pos:Distance(ply:GetPos())) then
 				closest = k
 			end
 		end
-		if !closest then
+		if not closest then
 			ply:ChatPrint("No closest spawn")
 			return
 		end
 		key = closest
 	end
 
-	if !spawnList[key] then
+	if not spawnList[key] then
 		ply:ChatPrint("Invalid key, position inexists")
 		return
 	end
@@ -191,7 +192,7 @@ concommand.Add("mu_spawn_remove", function (ply, com, args, full)
 end)
 
 concommand.Add("mu_spawn_visualise", function (ply, com, args, full)
-	if (!ply:IsAdmin()) then return end
+	if (not ply:IsAdmin()) then return end
 
 	if #args < 1 then
 		ply:ChatPrint("Too few args (spawnList)")
@@ -199,12 +200,12 @@ concommand.Add("mu_spawn_visualise", function (ply, com, args, full)
 	end
 
 	local spawnList = TeamSpawns[args[1]]
-	if !spawnList then
+	if not spawnList then
 		ply:ChatPrint("Invalid list")
 		return
 	end
 
-	if ply.SpawnsVisualise && ply.SpawnsVisualise == args[1] then
+	if ply.SpawnsVisualise and ply.SpawnsVisualise == args[1] then
 		net.Start("Spawns_View")
 		net.WriteUInt(0, 8)
 		net.Send(ply)

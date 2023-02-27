@@ -1,5 +1,3 @@
-
-
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 
@@ -10,6 +8,5 @@ ENT.Purpose			= ""
 ENT.Instructions	= ""
 
 function ENT:SetupDataTables()
-
 
 end

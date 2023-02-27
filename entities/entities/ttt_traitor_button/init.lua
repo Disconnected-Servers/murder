@@ -1,3 +1,6 @@
+local tostring = tostring
+local tonumber = tonumber
+
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
@@ -14,7 +17,7 @@ function ENT:Initialize()
 
 	self:SetDelay(self.RawDelay or 1)
 
-	if self:GetDelay() < 0 || self.RemoveOnPress then
+	if self:GetDelay() < 0 or self.RemoveOnPress then
 		self:SetDelay(-1)
 		self.RemoveOnPress = true
 	end
@@ -46,7 +49,7 @@ function ENT:KeyValue(key, value)
 	elseif key == "RemoveOnPress" then
 		self.RemoveOnPress = tobool(value)
 	else
-		// this is a terrible idea, but I don't know if it does something important in TTT
+		-- this is a terrible idea, but I don't know if it does something important in TTT
 		self:SetNetworkKeyValue(key, value)
 	end
 end
@@ -55,12 +58,15 @@ end
 function ENT:AcceptInput(name, activator)
 	if name == "Toggle" then
 		self:SetLocked(not self:GetLocked())
+		
 		return true
 	elseif name == "Hide" or name == "Lock" then
 		self:SetLocked(true)
+
 		return true
 	elseif name == "Unhide" or name == "Unlock" then
 		self:SetLocked(false)
+
 		return true
 	end
 end

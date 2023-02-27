@@ -1,3 +1,12 @@
+local CurTime = CurTime
+local math_Clamp = math.Clamp
+local draw_DrawText = draw.DrawText
+local surface_SetDrawColor = surface.SetDrawColor
+local surface_DrawRect = surface.DrawRect
+local math_Round = math.Round
+local IsValid = IsValid
+
+
 if SERVER then
 	AddCSLuaFile()
 	
@@ -17,8 +26,8 @@ else
 		local twf, thf = surface.GetTextSize(name:sub(1, 1))
 		tw = tw + twf + 1
 		
-		draw.DrawText(name:sub(2), "MersText1", x + w * 0.5 - tw / 2 + twf + 1, y + h * 0.51, Color(255, 150, 0, alpha), 0)
-		draw.DrawText(name:sub(1, 1), "MersHead1", x + w * 0.5 - tw / 2 , y + h * 0.49, Color(255, 50, 50, alpha), 0)
+		draw_DrawText(name:sub(2), "MersText1", x + w * 0.5 - tw / 2 + twf + 1, y + h * 0.51, Color(255, 150, 0, alpha), 0)
+		draw_DrawText(name:sub(1, 1), "MersHead1", x + w * 0.5 - tw / 2 , y + h * 0.49, Color(255, 50, 50, alpha), 0)
 	end
 	
 	function SWEP:DrawHUD()
@@ -26,14 +35,14 @@ else
 			local sw, sh = ScrW(), ScrH()
 			local charge = self:GetCharge()
 
-			-- draw.DrawText("Charging" .. (math.Round(self:GetCharge() * 100) / 100),"MersHead1", sw * 0.5, sh * 0.5 + 30, color_white,1)
+			-- draw_DrawText("Charging" .. (math_Round(self:GetCharge() * 100) / 100),"MersHead1", sw * 0.5, sh * 0.5 + 30, color_white,1)
 
-			local w, h = math.Round(ScrW() * 0.2), 40
-			surface.SetDrawColor(0, 0, 0, 180)
-			surface.DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w, h)
+			local w, h = math_Round(ScrW() * 0.2), 40
+			surface_SetDrawColor(0, 0, 0, 180)
+			surface_DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w, h)
 
-			surface.SetDrawColor(255, 0, 0, 150)
-			surface.DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w * charge, h)
+			surface_SetDrawColor(255, 0, 0, 150)
+			surface_DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w * charge, h)
 		end
 	end  
 
@@ -41,7 +50,7 @@ else
 		local ent = net.ReadEntity()
 		if not IsValid(ent) then return end
 		
-		local charging = net.ReadUInt(8) != 0
+		local charging = net.ReadUInt(8) ~= 0
 		if charging then
 			ent.ChargeStart = net.ReadDouble()
 		else
@@ -114,15 +123,15 @@ end
 
 function SWEP:Think()
 	self.BaseClass.Think(self)
-	if self:GetFistHit() != 0 && self:GetFistHit() < RealTime() then
+	if self:GetFistHit() ~= 0 and self:GetFistHit() < RealTime() then
 		self:SetFistHit(0)
 		if IsFirstTimePredicted() then
 			self:AttackTrace()
 		end
 	end
 	
-	if SERVER && self.ChargeStart then
-		if !IsValid(self.Owner) || !self.Owner:KeyDown(IN_ATTACK2) then
+	if SERVER and self.ChargeStart then
+		if not IsValid(self.Owner) or not self.Owner:KeyDown(IN_ATTACK2) then
 			if IsValid(self.Owner) then
 				self:ThrowKnife(self:GetCharge())
 				net.Start("mu_knife_charge")
@@ -144,14 +153,17 @@ function SWEP:GetTrace(left, up)
 	if left then
 		ang:RotateAroundAxis(ang:Up(), left)
 	end
+
 	if up then
 		ang:RotateAroundAxis(ang:Right(), up)
 	end
+
 	local vec = ang:Forward()
 	trace.endpos = trace.start + vec * self:GetFistRange()
 	local tr = util.TraceLine(trace)
 	tr.TraceAimVector = vec
 	tr.LeftUp = Vector(left or 0, up or 0, 0)
+
 	return tr
 end
 
@@ -159,6 +171,7 @@ function SWEP:AttackTrace()
 	if self.Owner:IsPlayer() then
 		self.Owner:LagCompensation( true )
 	end
+
 	local trace = {}
 	trace.filter = self.Owner
 	trace.start = self.Owner:GetShootPos()
@@ -169,16 +182,16 @@ function SWEP:AttackTrace()
 	local tr = util.TraceHull(trace)
 	tr.TraceAimVector = self.Owner:GetAimVector()
 
-	// aim around
-	if !IsValid(tr.Entity) then tr = self:GetTrace() end
-	if !IsValid(tr.Entity) then tr = self:GetTrace(10,0) end
-	if !IsValid(tr.Entity) then tr = self:GetTrace(-10,0) end
-	if !IsValid(tr.Entity) then tr = self:GetTrace(0,10) end
-	if !IsValid(tr.Entity) then tr = self:GetTrace(0,-10) end
+	-- aim around
+	if not IsValid(tr.Entity) then tr = self:GetTrace() end
+	if not IsValid(tr.Entity) then tr = self:GetTrace(10,0) end
+	if not IsValid(tr.Entity) then tr = self:GetTrace(-10,0) end
+	if not IsValid(tr.Entity) then tr = self:GetTrace(0,10) end
+	if not IsValid(tr.Entity) then tr = self:GetTrace(0,-10) end
 	
 	if tr.Hit then
 		if IsValid(tr.Entity) then
-			if CLIENT && LocalPlayer() == self.Owner then
+			if CLIENT and LocalPlayer() == self.Owner then
 				self:EmitSound("Weapon_Crowbar.Melee_Hit")
 			end
 			local dmg = DamageInfo()
@@ -190,7 +203,7 @@ function SWEP:AttackTrace()
 			dmg:SetDamageType(DMG_SLASH)
 			tr.Entity:DispatchTraceAttack(dmg, tr)
 
-			if tr.Entity != self && tr.Entity != self.Owner && (tr.Entity:IsPlayer() || tr.Entity:GetClass() == "prop_ragdoll") then
+			if tr.Entity ~= self and tr.Entity ~= self.Owner and (tr.Entity:IsPlayer() or tr.Entity:GetClass() == "prop_ragdoll") then
 				local edata = EffectData()
 				edata:SetStart(self.Owner:GetShootPos())
 				edata:SetOrigin(tr.HitPos)
@@ -202,11 +215,12 @@ function SWEP:AttackTrace()
 			self:EmitSound("Weapon_Crowbar.Melee_Hit")
 		end
 	else
-		// only play the sound for the murderer
-		if CLIENT && LocalPlayer() == self.Owner then
+		-- only play the sound for the murderer
+		if CLIENT and LocalPlayer() == self.Owner then
 			self:EmitSound("Weapon_Crowbar.Single")
 		end
 	end
+
 	if self.Owner:IsPlayer() then
 		self.Owner:LagCompensation( false )
 	end
@@ -214,7 +228,8 @@ end
 
 function SWEP:GetCharge()
 	local start = CurTime() - (self.ChargeStart or 0)
-	return math.Clamp((math.sin(start * 2 - 1) + 1) / 2, 0, 1)
+
+	return math_Clamp((math.sin(start * 2 - 1) + 1) / 2, 0, 1)
 end
 
 function SWEP:ThrowKnife(force)
@@ -235,7 +250,7 @@ function SWEP:ThrowKnife(force)
 end
 
 function SWEP:SecondaryAttack()
-	if !self:IsIdle() then return end
+	if not self:IsIdle() then return end
 
 	if SERVER then
 		if self.KnifeChargeConvar:GetBool() then
@@ -261,6 +276,7 @@ function SWEP:Reload()
 			net.WriteUInt(0, 8)
 			net.Send(self.Owner)
 		end
+		
 		return
 	end
 end

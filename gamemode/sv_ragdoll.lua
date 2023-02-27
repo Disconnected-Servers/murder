@@ -1,8 +1,12 @@
-local PlayerMeta = FindMetaTable("Player")
-local EntityMeta = FindMetaTable("Entity")
+local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
-if !PlayerMeta.CreateRagdollOld then
-	PlayerMeta.CreateRagdollOld = PlayerMeta.CreateRagdoll
+local IsValid = IsValid
+local util_IsValidRagdoll = util.IsValidRagdoll
+local table_insert = table.insert
+
+if not PLAYER.CreateRagdollOld then
+	PLAYER.CreateRagdollOld = PLAYER.CreateRagdoll
 end
 
 local function clearupRagdolls(ragdolls, max)
@@ -15,12 +19,13 @@ local function clearupRagdolls(ragdolls, max)
 		end
 	end
 
-	if max >= 0 && count > max then
+	if max >= 0 and count > max then
 		while true do
 			if count > max then
 				if IsValid(ragdolls[1]) then
 					ragdolls[1]:Remove()
 				end
+				
 				table.remove(ragdolls, 1)
 				count = count - 1
 			else
@@ -30,33 +35,33 @@ local function clearupRagdolls(ragdolls, max)
 	end
 end
 
-function PlayerMeta:CreateRagdoll(attacker, dmginfo)
+function PLAYER:CreateRagdoll(attacker, dmginfo)
 	local ent = self:GetNWEntity("DeathRagdoll")
 
-	// remove old player ragdolls
-	if !self.DeathRagdolls then self.DeathRagdolls = {} end
+	-- remove old player ragdolls
+	if not self.DeathRagdolls then self.DeathRagdolls = {} end
 	local max = hook.Run("MaxDeathRagdollsPerPlayer", self)
 	clearupRagdolls(self.DeathRagdolls, max or 1)
 
-	// remove old server ragdolls
-	if !GAMEMODE.DeathRagdolls then GAMEMODE.DeathRagdolls = {} end
+	-- remove old server ragdolls
+	if not GAMEMODE.DeathRagdolls then GAMEMODE.DeathRagdolls = {} end
 	local max = hook.Run("MaxDeathRagdolls")
 	clearupRagdolls(GAMEMODE.DeathRagdolls, max or 1)
 
 	local data = duplicator.CopyEntTable(self)
-	if !util.IsValidRagdoll(data.Model) then
+	if not util_IsValidRagdoll(data.Model) then
 		data.Model = "models/player/skeleton.mdl"
-		// if use pointshop or something similar to handle character models, just return could be problem with disguise.
+		-- if use pointshop or something similar to handle character models, just return could be problem with disguise.
 	end
 
 	local ent = ents.Create( "prop_ragdoll" )
-	data.ModelScale = 1 // doesn't work on ragdolls
+	data.ModelScale = 1 -- doesn't work on ragdolls
 	duplicator.DoGeneric(ent, data)
 	
 	self:SetNWEntity("DeathRagdoll", ent )
 	ent:SetNWEntity("RagdollOwner", self)
-	table.insert(self.DeathRagdolls,ent)
-	table.insert(GAMEMODE.DeathRagdolls,ent)
+	table_insert(self.DeathRagdolls,ent)
+	table_insert(GAMEMODE.DeathRagdolls,ent)
 	
 	if ent.SetPlayerColor then
 		ent:SetPlayerColor(self:GetPlayerColor())
@@ -81,24 +86,26 @@ function PlayerMeta:CreateRagdoll(attacker, dmginfo)
 	end
 end
 
-if !PlayerMeta.GetRagdollEntityOld then
-	PlayerMeta.GetRagdollEntityOld = PlayerMeta.GetRagdollEntity
+if not PLAYER.GetRagdollEntityOld then
+	PLAYER.GetRagdollEntityOld = PLAYER.GetRagdollEntity
 end
-function PlayerMeta:GetRagdollEntity()
+function PLAYER:GetRagdollEntity()
 	local ent = self:GetNWEntity("DeathRagdoll")
 	if IsValid(ent) then
 		return ent
 	end
+
 	return self:GetRagdollEntityOld()
 end
 
-if !PlayerMeta.GetRagdollOwnerOld then
-	PlayerMeta.GetRagdollOwnerOld = PlayerMeta.GetRagdollOwner
+if not PLAYER.GetRagdollOwnerOld then
+	PLAYER.GetRagdollOwnerOld = PLAYER.GetRagdollOwner
 end
-function EntityMeta:GetRagdollOwner()
+function ENTITY:GetRagdollOwner()
 	local ent = self:GetNWEntity("RagdollOwner")
 	if IsValid(ent) then
 		return ent
 	end
+
 	return self:GetRagdollOwnerOld()
 end

@@ -1,15 +1,17 @@
-// add cs lua all the cl_ or sh_ files
+-- add cs lua all the cl_ or sh_ files
 local folders = {
 	(GM or GAMEMODE).Folder:sub(11) .. "/gamemode/"
 }
+
 for k, folder in pairs(folders) do
 	local files, subfolders = file.Find(folder .. "*", "LUA")
 	for k, filename in pairs(files) do
-		if filename:sub(1, 3) == "cl_" || filename:sub(1, 3) == "sh_" || filename == "shared.lua"
-			|| folder:match("/sh_") || folder:match("/cl_") then
+		if filename:sub(1, 3) == "cl_" or filename:sub(1, 3) == "sh_" or filename == "shared.lua"
+			or folder:match("/sh_") or folder:match("/cl_") then
 			AddCSLuaFile(folder .. filename)
 		end
 	end
+
 	for k, subfolder in pairs(subfolders) do
 		table.insert(folders, folder .. subfolder .. "/")
 	end
@@ -50,7 +52,7 @@ GM.DelayAfterEnoughPlayers = CreateConVar("mu_delay_after_enough_players", 10, b
 GM.FlashlightBattery = CreateConVar("mu_flashlight_battery", 10, bit.bor(FCVAR_NOTIFY), "How long the flashlight should last in seconds (0 for infinite)" )
 GM.Language = CreateConVar("mu_language", "", bit.bor(FCVAR_NOTIFY), "The language Murder should use" )
 
-// replicated
+-- replicated
 GM.ShowAdminsOnScoreboard = CreateConVar("mu_scoreboard_show_admins", 1, bit.bor(0), "Should show admins on scoreboard" )
 GM.AdminPanelAllowed = CreateConVar("mu_allow_admin_panel", 1, bit.bor(FCVAR_NOTIFY), "Should allow admins to use mu_admin_panel" )
 GM.ShowSpectateInfo = CreateConVar("mu_show_spectate_info", 1, bit.bor(FCVAR_NOTIFY), "Should show players name and color to spectators" )
@@ -71,12 +73,13 @@ function GM:InitPostEntity()
 			self:AddLootItem(ent)
 		end
 	end
+
 	self:InitPostEntityAndMapCleanup()
 end
 
 function GM:InitPostEntityAndMapCleanup() 
 	for k, ent in pairs(ents.GetAll()) do
-		if ent:IsWeapon() || ent:GetClass():match("^weapon_") then
+		if ent:IsWeapon() or ent:GetClass():match("^weapon_") then
 			ent:Remove()
 		end
 
@@ -98,17 +101,19 @@ function GM:Think()
 	self:FlashlightThink()
 
 	for k, ply in pairs(player.GetAll()) do
-		if ply:IsCSpectating() && IsValid(ply:GetCSpectatee()) && (!ply.LastSpectatePosSet || ply.LastSpectatePosSet < CurTime()) then
+		if ply:IsCSpectating() and IsValid(ply:GetCSpectatee()) and (not ply.LastSpectatePosSet or ply.LastSpectatePosSet < CurTime()) then
 			ply.LastSpectatePosSet = CurTime() + 0.25
 			ply:SetPos(ply:GetCSpectatee():GetPos())
 		end
-		if !ply.HasMoved then
-			if ply:IsBot() || ply:KeyDown(IN_FORWARD) || ply:KeyDown(IN_JUMP) || ply:KeyDown(IN_ATTACK) || ply:KeyDown(IN_ATTACK2)
-				|| ply:KeyDown(IN_MOVELEFT) || ply:KeyDown(IN_MOVERIGHT) || ply:KeyDown(IN_BACK) || ply:KeyDown(IN_DUCK) then
+
+		if not ply.HasMoved then
+			if ply:IsBot() or ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_JUMP) or ply:KeyDown(IN_ATTACK) or ply:KeyDown(IN_ATTACK2)
+				or ply:KeyDown(IN_MOVELEFT) or ply:KeyDown(IN_MOVERIGHT) or ply:KeyDown(IN_BACK) or ply:KeyDown(IN_DUCK) then
 				ply.HasMoved = true
 			end
 		end
-		if ply.LastTKTime && ply.LastTKTime + self:GetTKPenaltyTime() < CurTime() then
+
+		if ply.LastTKTime and ply.LastTKTime + self:GetTKPenaltyTime() < CurTime() then
 			ply:SetTKer(false)
 		end
 	end
@@ -119,13 +124,15 @@ function GM:AllowPlayerPickup( ply, ent )
 end
 
 function GM:PlayerNoClip( ply )
-	return ply:IsListenServerHost() || ply:GetMoveType() == MOVETYPE_NOCLIP
+	return ply:IsListenServerHost() or ply:GetMoveType() == MOVETYPE_NOCLIP
 end
 
 function GM:OnEndRound()
+
 end
 
 function GM:OnStartRound()
+
 end
 
 function GM:SendMessageAll(msg) 
@@ -135,12 +142,12 @@ function GM:SendMessageAll(msg)
 end
 
 function GM:EntityTakeDamage( ent, dmginfo )
-	// disable all prop damage
-	if IsValid(dmginfo:GetAttacker()) && (dmginfo:GetAttacker():GetClass() == "prop_physics" || dmginfo:GetAttacker():GetClass() == "prop_physics_multiplayer" || dmginfo:GetAttacker():GetClass() == "prop_physics_respawnable" || dmginfo:GetAttacker():GetClass() == "func_physbox") then
+	-- disable all prop damage
+	if IsValid(dmginfo:GetAttacker()) and (dmginfo:GetAttacker():GetClass() == "prop_physics" or dmginfo:GetAttacker():GetClass() == "prop_physics_multiplayer" or dmginfo:GetAttacker():GetClass() == "prop_physics_respawnable" or dmginfo:GetAttacker():GetClass() == "func_physbox") then
 		return true
 	end
 
-	if IsValid(dmginfo:GetInflictor()) && (dmginfo:GetInflictor():GetClass() == "prop_physics" || dmginfo:GetInflictor():GetClass() == "prop_physics_multiplayer" || dmginfo:GetInflictor():GetClass() == "prop_physics_respawnable" || dmginfo:GetInflictor():GetClass() == "func_physbox") then
+	if IsValid(dmginfo:GetInflictor()) and (dmginfo:GetInflictor():GetClass() == "prop_physics" or dmginfo:GetInflictor():GetClass() == "prop_physics_multiplayer" or dmginfo:GetInflictor():GetClass() == "prop_physics_respawnable" or dmginfo:GetInflictor():GetClass() == "func_physbox") then
 		return true
 	end
 
@@ -151,11 +158,12 @@ function file.ReadDataAndContent(path)
 	local f = file.Read(path, "DATA")
 	if f then return f end
 	f = file.Read(GAMEMODE.Folder .. "/content/data/" .. path, "GAME")
+	
 	return f
 end
 
 util.AddNetworkString("reopen_round_board")
-function GM:ShowTeam(ply) // F2
+function GM:ShowTeam(ply) -- F2
 	net.Start("reopen_round_board")
 	net.Send(ply)
 end

@@ -1,3 +1,11 @@
+local LocalPlayer = LocalPlayer
+local ScrW = ScrW
+local ScrH = ScrH
+local CurTime = CurTime
+local surface_SetDrawColor = surface.SetDrawColor
+local surface_DrawRect = surface.DrawRect
+local render_SetColorModulation = render.SetColorModulation
+local render_SetBlend = render.SetBlend
 
 function GM:RenderDeathOverlay()
 	local client = LocalPlayer()
@@ -5,15 +13,15 @@ function GM:RenderDeathOverlay()
 
 	if GAMEMODE.SpectateTime > CurTime() then
 
-		// render black screen
-		surface.SetDrawColor(0,0,0,255)
-		surface.DrawRect(-1,-1,sw + 2,sh + 2)
+		-- render black screen
+		surface_SetDrawColor(0,0,0,255)
+		surface_DrawRect(-1,-1,sw + 2,sh + 2)
 
-		render.SetColorModulation(1, 1, 1)
-		render.SetBlend(1)
+		render_SetColorModulation(1, 1, 1)
+		render_SetBlend(1)
 
 		
-		// render body
+		-- render body
 		cam.Start3D( EyePos(), EyeAngles() )
 		cam.IgnoreZ(true)
 		local ent = client:GetRagdollEntity()
