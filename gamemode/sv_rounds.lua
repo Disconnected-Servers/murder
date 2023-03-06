@@ -1,4 +1,3 @@
-
 util.AddNetworkString("SetRound")
 util.AddNetworkString("DeclareWinner")
 
@@ -9,6 +8,7 @@ local pairs = pairs
 
 GM.RoundStage = 0
 GM.RoundCount = 0
+GM.Murderers = {}
 if GAMEMODE then
 	GM.RoundStage = GAMEMODE.RoundStage
 	GM.RoundCount = GAMEMODE.RoundCount
@@ -82,22 +82,18 @@ function GM:RoundThink()
 		-- after x minutes without a kill reveal the murderer
 		local time = self.MurdererFogTime:GetFloat()
 		time = math_max(0, time)
+		local players = team_GetPlayers(2)
 
-		if time > 0 and self.MurdererLastKill and self.MurdererLastKill + time < CurTime() then
-			local murderer
-			local players = team_GetPlayers(2)
-			for k,v in pairs(players) do
-				if v:GetMurderer() then
-					murderer = v
+		for k, ply in pairs(players) do
+			if ply:GetMurderer() then
+				if time > 0 and ply.MurdererLastKill and ply.MurdererLastKill + time < CurTime() then
+					if not ply:GetMurdererRevealed() then
+						ply:SetMurdererRevealed(true)
+						ply.MurdererLastKill = nil
+					end
 				end
 			end
-
-			if murderer and not murderer:GetMurdererRevealed() then
-				murderer:SetMurdererRevealed(true)
-				self.MurdererLastKill = nil
-			end
 		end
-
 	elseif self.RoundStage == self.Round.RoundEnd then
 		if self.RoundTime + 5 < CurTime() then
 			self:StartNewRound()
@@ -108,12 +104,16 @@ function GM:RoundThink()
 			self:SetRound(0)
 		elseif CurTime() >= self.StartNewRoundTime then
 			self:StartNewRound()
+
+			for _, ply in pairs(player.GetAll()) do
+				ply.MurdererLastKill = 0
+			end
 		end
 	end	
 end
 
 function GM:RoundCheckForWin()
-	local murderer
+	local murderers = {}
 	local players = team_GetPlayers(2)
 
 	if #players <= 0 then 
@@ -128,25 +128,33 @@ function GM:RoundCheckForWin()
 		end
 
 		if v:GetMurderer() then
-			murderer = v
+			murderers[#murderers + 1] = v
 		end
 	end
 
 	-- check we have a murderer
-	if not IsValid(murderer) then
-		self:EndTheRound(3, murderer)
+	if #murderers < 1 then
+		self:EndTheRound(3, murderers)
 		return
 	end
 
 	-- has the murderer killed everyone?
 	if #survivors < 1 then
-		self:EndTheRound(1, murderer)
+		self:EndTheRound(1, murderers)
 		return
 	end
 
+	local livingMurderer = false
+	for _, ply in pairs(murderers) do
+		if not IsValid(ply) then continue end
+		if not ply:Alive() then continue end
+
+		livingMurderer = true
+	end
+
 	-- is the murderer dead?
-	if not murderer:Alive() then
-		self:EndTheRound(2, murderer)
+	if not livingMurderer then
+		self:EndTheRound(2, murderers)
 		return
 	end
 
@@ -156,14 +164,17 @@ end
 
 function GM:DoRoundDeaths(dead, attacker)
 	if self.RoundStage == self.Round.Playing then
-		self.RoundLastDeath = CurTime() + 2
+		local time = CurTime() + 2
+		
+		self.RoundLastDeath = time
+		attacker.LastKill = time
 	end
 end
 
 -- 1 Murderer wins
 -- 2 Murderer loses
 -- 3 Murderer rage quit
-function GM:EndTheRound(reason, murderer)
+function GM:EndTheRound(reason, murderers)
 	if self.RoundStage ~= self.Round.Playing then return end
 
 	local players = team_GetPlayers(2)
@@ -174,53 +185,104 @@ function GM:EndTheRound(reason, murderer)
 	end
 
 	if reason == 3 then
-		if murderer then
-			local col = murderer:GetPlayerColor()
-			local msgs = Translator:AdvVarTranslate(translate.murdererDisconnectKnown, {
-				murderer = {text = murderer:Nick() .. ", " .. murderer:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
-			})
-			local ct = ChatText(msgs)
-			ct:SendAll()
-			-- ct:Add(", it was ")
-			-- ct:Add(murderer:Nick() .. ", " .. murderer:GetBystanderName(), Color(col.x * 255, col.y * 255, col.z * 255))
+		if murderers >= 1 then
+			local hasAMurderer = false 
+
+			for _, ply in pairs(murderers) do
+				if not IsValid(ply) then continue end
+
+				hasAMurderer = true
+
+				local col = murderer:GetPlayerColor()
+				local msgs = Translator:AdvVarTranslate(translate.murdererDisconnectKnown, {
+					murderer = {text = murderer:Nick() .. ", " .. murderer:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
+				})
+
+				local ct = ChatText(msgs)
+				ct:SendAll()
+				-- ct:Add(", it was ")
+				-- ct:Add(murderer:Nick() .. ", " .. murderer:GetBystanderName(), Color(col.x * 255, col.y * 255, col.z * 255))
+			end
+
+			if not hasAMurderer then
+				local ct = ChatText()
+				ct:Add(translate.murdererDisconnect)
+				ct:SendAll()
+			end
 		else
 			local ct = ChatText()
 			ct:Add(translate.murdererDisconnect)
 			ct:SendAll()
 		end
 	elseif reason == 2 then
-		local col = murderer:GetPlayerColor()
-		local msgs = Translator:AdvVarTranslate(translate.winBystandersMurdererWas, {
-			murderer = {text = murderer:Nick() .. ", " .. murderer:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
-		})
-		local ct = ChatText()
-		ct:Add(translate.winBystanders, Color(20, 120, 255))
-		ct:AddParts(msgs)
-		ct:SendAll()
+		for _, ply in pairs(murderers) do
+			if IsValid(ply) then continue end
+
+			local col = ply:GetPlayerColor()
+			local msgs = Translator:AdvVarTranslate(translate.winBystandersMurdererWas, {
+				murderer = {text = ply:Nick() .. ", " .. ply:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
+			})
+			local ct = ChatText()
+			ct:Add(translate.winBystanders, color_dblue or Color(20, 120, 255))
+			ct:AddParts(msgs)
+			ct:SendAll()
+		end
+
+		--[[
+		for _, ply in pairs(team.GetPlayers(2)) do
+			if ply:Alive() then
+				ply:AddFrags(2)
+			else
+				ply:AddFrags(1)
+			end
+		end
+		]]
 	elseif reason == 1 then
-		local col = murderer:GetPlayerColor()
-		local msgs = Translator:AdvVarTranslate(translate.winMurdererMurdererWas, {
-			murderer = {text = murderer:Nick() .. ", " .. murderer:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
-		})
-		local ct = ChatText()
-		ct:Add(translate.winMurderer, Color(190, 20, 20))
-		ct:AddParts(msgs)
-		ct:SendAll()
+		for _,ply in pairs(murderers) do
+			if not IsValid(ply) then continue end
+				
+			local col = ply:GetPlayerColor()
+			local msgs = Translator:AdvVarTranslate(translate.winMurdererMurdererWas, {
+				murderer = {text = ply:Nick() .. ", " .. ply:GetBystanderName(), color = Color(col.x * 255, col.y * 255, col.z * 255)}
+			})
+			local ct = ChatText()
+			ct:Add(translate.winMurderer, color_red or Color(190, 20, 20))
+			ct:AddParts(msgs)
+			ct:SendAll()
+
+			--ply:AddFrags(2)
+		end
 	end
 
 	net.Start("DeclareWinner")
 	net.WriteUInt(reason, 8)
-	if murderer then
-		net.WriteEntity(murderer)
-		net.WriteVector(murderer:GetPlayerColor())
-		net.WriteString(murderer:GetBystanderName())
+	if #murderers >= 1 then
+		net.WriteTable(murderers)
+
+		local murdererColors = {}
+		for _, ply in pairs(murderers) do
+			if not IsValid(ply) then return end
+
+			murdererColors[#murdererColors + 1] = ply:GetPlayerColor()
+		end
+
+		net.WriteTable(murdererColors)
+
+		local murdererNames = {}
+		for _, ply in pairs(murderers) do
+			if not IsValid(ply) then return end
+
+			murdererNames[#murdererNames + 1] = ply:GetBystanderName()
+		end
+
+		net.WriteTable(murdererNames)
 	else
 		net.WriteEntity(Entity(0))
 		net.WriteVector(Vector(1, 1, 1))
 		net.WriteString("?")
 	end
 
-	for k, ply in pairs(team_GetPlayers(2)) do
+	for _, ply in pairs(team_GetPlayers(2)) do
 		net.WriteUInt(1, 8)
 		net.WriteEntity(ply)
 		net.WriteUInt(ply.LootCollected, 32)
@@ -256,6 +318,10 @@ function GM:EndTheRound(reason, murderer)
 	self.RoundUnFreezePlayers = nil
 	self.MurdererLastKill = nil
 
+	for _, ply in pairs(player.GetAll()) do 
+		ply.MurdererLastKill = nil
+	end
+
 	hook.Call("OnEndRound")
 	hook.Run("OnEndRoundResult", reason)
 	self.RoundCount = self.RoundCount + 1
@@ -272,6 +338,7 @@ end
 
 function GM:StartNewRound()
 	local players = team_GetPlayers(2)
+
 	if #players <= 1 then 
 		local ct = ChatText()
 		ct:Add(translate.minimumPlayers, Color(255, 150, 50))
@@ -295,16 +362,14 @@ function GM:StartNewRound()
 	self:InitPostEntityAndMapCleanup()
 	self:ClearAllFootsteps()
 
-
-
-	local oldMurderer
-	for k,v in pairs(players) do
-		if v:GetMurderer() then
-			oldMurderer = v
+	local oldMurderers = {}
+	for k,ply in pairs(players) do
+		if ply:GetMurderer() then
+			oldMurderers[ply] = true
 		end
 	end
 	
-	local murderer
+	local murderers = {}
 
 	-- get the weight multiplier
 	local weightMul = self.MurdererWeight:GetFloat()
@@ -315,20 +380,27 @@ function GM:StartNewRound()
 		rand:Add(ply.MurdererChance ^ weightMul, ply)
 		ply.MurdererChance = ply.MurdererChance + 1
 	end
-	murderer = rand:Roll()
+
+	if #team_GetPlayers(2) >= 10 then
+		for i = 1, (math.Round(#team_GetPlayers(2), -1) / 10) + 1 do  
+			murderers[#murderers + 1] = rand:Roll()
+		end
+	else
+		murderers[1] = rand:Roll()
+	end
 
 	-- allow admins to specify next murderer
 	if self.ForceNextMurderer and IsValid(self.ForceNextMurderer) and self.ForceNextMurderer:Team() == 2 then
-		murderer = self.ForceNextMurderer
+		murderers[1] = self.ForceNextMurderer
 		self.ForceNextMurderer = nil
 	end
 
-	if IsValid(murderer) then
-		murderer:SetMurderer(true)
+	for _, ply in pairs(murderers) do 
+		ply:SetMurderer(true)
 	end
 
 	for k, ply in pairs(players) do
-		if ply ~= murderer then
+		if not table.HasValue(murderers, ply) then
 			ply:SetMurderer(false)
 		end
 
@@ -349,15 +421,23 @@ function GM:StartNewRound()
 		ply:CalculateSpeed()
 		ply:GenerateBystanderName()
 	end
-	local noobs = table.Copy(players)
-	table.RemoveByValue(noobs, murderer)
-	local magnum = table.Random(noobs)
 
+	local noobs = table.Copy(players)
+	for _, ply in pairs(murderers) do 
+		table.RemoveByValue(noobs, ply)
+	end
+
+	local magnum = table.Random(noobs)
 	if IsValid(magnum) then
 		magnum:Give("weapon_mu_magnum")
 	end
 
-	self.MurdererLastKill = CurTime()
+	local startTime = CurTime()
+	for _, ply in pairs(murderers) do 
+		ply.MurdererLastKill = startTime
+	end
+
+	self.MurdererLastKill = startTime
 
 	self:SetRound(self.Round.Playing)
 	hook.Call("OnStartRound")
@@ -368,10 +448,26 @@ function GM:PlayerLeavePlay(ply)
 		ply:DropWeapon(ply:GetWeapon("weapon_mu_magnum"))
 	end
 
+	local murderers = {}
+
 	if self.RoundStage == 1 then
 		if ply:GetMurderer() then
-			self:EndTheRound(3, ply)
+			murderers[1] = ply
 		end
+	end
+
+	local hasMurderer = false
+	for _, ply in pairs(team_GetPlayers(2)) do
+		if not IsValid(ply) then continue end
+		if ply == murderers[1] then continue end
+		if not ply:GetMurderer() then continue end
+		
+		murderers[#murderers + 1] = ply
+		hasMurderer = true
+	end
+
+	if not hasMurderer then
+		self:EndTheRound(3, murderers)
 	end
 end
 

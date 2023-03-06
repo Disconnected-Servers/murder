@@ -8,8 +8,6 @@ local Color = Color
 local table_insert = table.insert
 
 
-
-
 include("sh_translate.lua")
 include("shared.lua")
 include("cl_hud.lua")

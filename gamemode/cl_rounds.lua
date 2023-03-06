@@ -48,9 +48,9 @@ end)
 net.Receive("DeclareWinner" , function (length)
 	local data = {}
 	data.reason = net.ReadUInt(8)
-	data.murderer = net.ReadEntity()
-	data.murdererColor = net.ReadVector()
-	data.murdererName = net.ReadString()
+	data.murderer = net.ReadTable()
+	data.murdererColor = net.ReadTable()
+	data.murdererName = net.ReadTable()
 	if IsValid(data.murderer) then
 
 	end

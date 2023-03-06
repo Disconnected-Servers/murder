@@ -1,4 +1,4 @@
-local IsValid
+local IsValid = IsValid
 
 
 AddCSLuaFile( "cl_init.lua" )

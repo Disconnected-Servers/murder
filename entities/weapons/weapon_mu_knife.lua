@@ -1,8 +1,5 @@
 local CurTime = CurTime
 local math_Clamp = math.Clamp
-local draw_DrawText = draw.DrawText
-local surface_SetDrawColor = surface.SetDrawColor
-local surface_DrawRect = surface.DrawRect
 local math_Round = math.Round
 local IsValid = IsValid
 
@@ -10,7 +7,6 @@ local IsValid = IsValid
 if SERVER then
 	AddCSLuaFile()
 	
-		
 	util.AddNetworkString("mu_knife_charge")
 
 	SWEP.KnifeChargeConvar = CreateConVar("mu_knife_charge", 1, bit.bor(FCVAR_NOTIFY), "Should we use a charge bar on alt attack?" )
@@ -26,8 +22,8 @@ else
 		local twf, thf = surface.GetTextSize(name:sub(1, 1))
 		tw = tw + twf + 1
 		
-		draw_DrawText(name:sub(2), "MersText1", x + w * 0.5 - tw / 2 + twf + 1, y + h * 0.51, Color(255, 150, 0, alpha), 0)
-		draw_DrawText(name:sub(1, 1), "MersHead1", x + w * 0.5 - tw / 2 , y + h * 0.49, Color(255, 50, 50, alpha), 0)
+		draw.DrawText(name:sub(2), "MersText1", x + w * 0.5 - tw / 2 + twf + 1, y + h * 0.51, Color(255, 150, 0, alpha), 0)
+		draw.DrawText(name:sub(1, 1), "MersHead1", x + w * 0.5 - tw / 2 , y + h * 0.49, Color(255, 50, 50, alpha), 0)
 	end
 	
 	function SWEP:DrawHUD()
@@ -35,14 +31,14 @@ else
 			local sw, sh = ScrW(), ScrH()
 			local charge = self:GetCharge()
 
-			-- draw_DrawText("Charging" .. (math_Round(self:GetCharge() * 100) / 100),"MersHead1", sw * 0.5, sh * 0.5 + 30, color_white,1)
+			-- draw.DrawText("Charging" .. (math_Round(self:GetCharge() * 100) / 100),"MersHead1", sw * 0.5, sh * 0.5 + 30, color_white,1)
 
 			local w, h = math_Round(ScrW() * 0.2), 40
-			surface_SetDrawColor(0, 0, 0, 180)
-			surface_DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w, h)
+			surface.SetDrawColor(0, 0, 0, 180)
+			surface.DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w, h)
 
-			surface_SetDrawColor(255, 0, 0, 150)
-			surface_DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w * charge, h)
+			surface.SetDrawColor(255, 0, 0, 150)
+			surface.DrawRect(sw / 2 - w / 2, sh / 2 - h / 2 + 120, w * charge, h)
 		end
 	end  
 

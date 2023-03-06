@@ -13,9 +13,9 @@ pt.teamPlayers = "Players"
 pt.teamAss = "Cake"
 
 pt.killedTeamKill = "{player} killed an innocent bystander"
-pt.killedMurderer = "{player} killed the murderer"
+pt.killedMurderer = "{player} killed a murderer"
 
-pt.murdererDeathUnknown = "The murderer died in mysterious circumstances"
+pt.murdererDeathUnknown = "A murderer died in mysterious circumstances"
 
 pt.changeTeam = "{player} changed team to {team}"
 pt.teamMoved = "{player} was moved to {team}"
@@ -23,13 +23,13 @@ pt.teamMovedAFK = "{player} was moved to {team} for being AFK"
 
 pt.spectateFailed = "You can't spectate. You ain't dead."
 
-pt.murdererDisconnect = "The murderer rage quit"
-pt.murdererDisconnectKnown = "The murderer rage quit, it was {murderer}"
+pt.murdererDisconnect = "A murderer rage quit"
+pt.murdererDisconnectKnown = "A murderer rage quit, it was {murderer}"
 
 pt.winBystanders = "Bystanders win!"
-pt.winBystandersMurdererWas = " The murderer was {murderer}"
-pt.winMurderer = "The murderer wins!"
-pt.winMurdererMurdererWas = " He was {murderer}"
+pt.winBystandersMurdererWas = " The murderers were {murderer}"
+pt.winMurderer = "The murderers win!"
+pt.winMurdererMurdererWas = " They were {murderer}"
 
 pt.minimumPlayers = "Not enough players to start round"
 pt.waitingToStart = "Waiting to start round"

@@ -11,6 +11,7 @@ local pairs = pairs
 function GM:PlayerInitialSpawn( ply )
 	ply.LootCollected = 0
 	ply.MurdererChance = 1
+	ply.MurdererLastKill = 0
 
 	timer_Simple(0, function ()
 		if IsValid(ply) then
@@ -219,16 +220,20 @@ function GM:PlayerDeath(ply, Inflictor, attacker )
 
 	if not ply:GetMurderer() then
 
-		self.MurdererLastKill = CurTime()
-		local murderer
+		local time = CurTime()
+		self.MurdererLastKill = time
+		attacker.MurdererLastKill = time
+
+		local murderers = {}
 		local players = team.GetPlayers(2)
-		for k,v in pairs(players) do
-			if v:GetMurderer() then
-				murderer = v
+		for _, ply in pairs(players) do
+			if ply:GetMurderer() then
+				murderers[#murderers + 1] = ply
 			end
 		end
-		if murderer then
-			murderer:SetMurdererRevealed(false)
+
+		for _, ply in pairs(murderers) do
+			ply:SetMurdererRevealed(false)
 		end
 
 		if IsValid(attacker) and attacker:IsPlayer() then
@@ -375,10 +380,9 @@ function GM:PlayerOnChangeTeam(ply, newTeam, oldTeam)
 	if oldTeam == 2 then
 		self:PlayerLeavePlay(ply)	
 	end
+
 	ply:SetMurderer(false)
-	if newteam == 1 then
-		
-	end
+
 	ply.HasMoved = true
 	ply:KillSilent()
 end
