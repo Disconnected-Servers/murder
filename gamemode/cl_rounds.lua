@@ -4,6 +4,7 @@ local LocalPlayer = LocalPlayer
 
 GM.RoundStage = 0
 GM.LootCollected = 0
+GM.RoundStarted = 0
 GM.RoundSettings = {}
 
 if GAMEMODE then
@@ -15,6 +16,17 @@ end
 function GM:GetRound()
 	return self.RoundStage or 0
 end
+
+function GM:GetRoundTime()
+	local started = self.RoundStarted or 0
+	return CurTime() - started
+end
+
+net.Receive("ChangeMaxLength", function (length)
+	local time = net.ReadInt(32)
+	GAMEMODE.RoundSettings.RoundMaxLength = time
+end)
+
 
 net.Receive("SetRound", function (length)
 	local r = net.ReadUInt(8)
@@ -28,6 +40,7 @@ net.Receive("SetRound", function (length)
 		GAMEMODE.RoundSettings.ShowAdminsOnScoreboard = net.ReadUInt(8) ~= 0
 		GAMEMODE.RoundSettings.AdminPanelAllowed = net.ReadUInt(8) ~= 0
 		GAMEMODE.RoundSettings.ShowSpectateInfo = net.ReadUInt(8) ~= 0
+		GAMEMODE.RoundSettings.RoundMaxLength = net.ReadInt(32)
 	end
 
 	if r == GAMEMODE.Round.RoundStarting then
@@ -41,7 +54,9 @@ net.Receive("SetRound", function (length)
 				LocalPlayer():EmitSound("ambient/creatures/town_child_scream1.wav", 100, pitch)
 			end
 		end)
+
 		GAMEMODE.LootCollected = 0
+		GAMEMODE.RoundStarted = CurTime()
 	end
 end)
 

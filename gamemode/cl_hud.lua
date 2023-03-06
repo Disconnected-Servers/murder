@@ -66,6 +66,14 @@ local function drawTextShadow(t,f,x,y,c,px,py)
 	color_black.a = 255
 end
 
+surface.CreateFont( "TimerText" , {
+	font = "closecaption_bold",
+	size = math.ceil(baseSize),
+	weight = 500,
+	antialias = true,
+	italic = false
+})
+
 
 local healthCol = Color(120,255,20)
 function GM:HUDPaint()
@@ -354,9 +362,42 @@ function GM:DrawGameHUD(ply)
 
 		drawTextShadow(name, "MersRadial", ScrW() - 20, ScrH() - 10, color, 2, TEXT_ALIGN_BOTTOM)
 	end
+
+	local shouldDraw = hook.Run("HUDShouldDraw", "RoundTime")
+	if shouldDraw != false then
+		local max = self.RoundSettings.RoundMaxLength
+		if max != -1 then
+			local time = math.floor(max - self:GetRoundTime())
+			local minutes = 0
+			local seconds = 0
+			local s = ""
+			local font = ""
+
+			if time > 0 then
+				minutes = math.floor(time / 60)
+				seconds = time % 60
+				if minutes == 0 then
+					s = string.format("%d", time)
+				else
+					s = string.format("%d:%02d", minutes, seconds)
+				end
+			else
+				s = 0
+			end
+
+			if baseSize >= 40 then
+				font = "MersRadial"
+			else
+				font = "TimerText"
+			end
+
+			drawTextShadow(s, font, ScrW() - 20, 10, Color(190, 20, 20), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+		end
+	end
 end
 
 function GM:GUIMousePressed(code, vector)
+
 end
 
 function GM:RenderScreenspaceEffects()

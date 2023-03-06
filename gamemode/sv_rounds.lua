@@ -1,5 +1,6 @@
 util.AddNetworkString("SetRound")
 util.AddNetworkString("DeclareWinner")
+util.AddNetworkString("ChangeMaxLength")
 
 local IsValid = IsValid
 local math_max = math.max
@@ -8,14 +9,49 @@ local pairs = pairs
 
 GM.RoundStage = 0
 GM.RoundCount = 0
+GM.RoundStarted = 0
 GM.Murderers = {}
+
 if GAMEMODE then
 	GM.RoundStage = GAMEMODE.RoundStage
 	GM.RoundCount = GAMEMODE.RoundCount
+	GM.RoundStarted = GAMEMODE.RoundStarted
 end
 
 function GM:GetRound()
 	return self.RoundStage or 0
+end
+
+function GM:GetRoundTime()
+	local started = self.RoundStarted or 0
+	return CurTime() - self.RoundStarted
+end
+
+function GM:CheckRoundTime()
+	local max = self.RoundSettings.RoundMaxLength or 0
+	if max == -1 then
+		-- Disabled
+		return true
+	end
+
+	local time = self:GetRoundTime()
+	time = max - time
+
+	if time <= 0 then
+		-- Ran out of time
+		return false
+	else
+		-- Still got time
+		return true
+	end
+end
+
+function GM:ChangeRoundMaxLength(seconds)
+	net.Start("ChangeMaxLength")
+	net.WriteInt(seconds, 32)
+	net.Broadcast()
+
+	self.RoundSettings.RoundMaxLength = seconds
 end
 
 function GM:SetRound(round)
@@ -27,6 +63,7 @@ function GM:SetRound(round)
 	self.RoundSettings.ShowAdminsOnScoreboard = self.ShowAdminsOnScoreboard:GetBool()
 	self.RoundSettings.AdminPanelAllowed = self.AdminPanelAllowed:GetBool()
 	self.RoundSettings.ShowSpectateInfo = self.ShowSpectateInfo:GetBool()
+	self.RoundSettings.RoundMaxLength = self.RoundMaxLength:GetInt()
 
 	self:NetworkRound()
 end
@@ -41,6 +78,7 @@ function GM:NetworkRound(ply)
 		net.WriteUInt(self.RoundSettings.ShowAdminsOnScoreboard and 1 or 0, 8)
 		net.WriteUInt(self.RoundSettings.AdminPanelAllowed and 1 or 0, 8)
 		net.WriteUInt(self.RoundSettings.ShowSpectateInfo and 1 or 0, 8)
+		net.WriteInt(self.RoundSettings.RoundMaxLength, 32)
 	else
 		net.WriteUInt(0, 8)
 	end
@@ -154,6 +192,12 @@ function GM:RoundCheckForWin()
 
 	-- is the murderer dead?
 	if not livingMurderer then
+		self:EndTheRound(2, murderers)
+		return
+	end
+
+	-- Ran out of time?
+	if not self:CheckRoundTime() then
 		self:EndTheRound(2, murderers)
 		return
 	end
@@ -440,6 +484,7 @@ function GM:StartNewRound()
 	self.MurdererLastKill = startTime
 
 	self:SetRound(self.Round.Playing)
+	self.RoundStarted = CurTime()
 	hook.Call("OnStartRound")
 end
 
@@ -579,3 +624,15 @@ function GM:LoadMapList()
 		self:SaveMapList()
 	end
 end
+
+concommand.Add("mu_update_length", function(ply, cmd, args, argStr)
+	if not ply:IsSuperAdmin() then return end
+
+	local seconds = tonumber(args[1])
+	if seconds ~= nil then
+		if seconds ~= -1 then
+			seconds = seconds + GAMEMODE:GetRoundTime()
+		end
+		GAMEMODE:ChangeRoundMaxLength(seconds)
+	end
+end)

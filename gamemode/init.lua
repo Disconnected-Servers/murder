@@ -50,6 +50,7 @@ GM.RoundLimit = CreateConVar("mu_roundlimit", 0, bit.bor(FCVAR_NOTIFY), "Number 
 GM.DelayAfterEnoughPlayers = CreateConVar("mu_delay_after_enough_players", 10, bit.bor(FCVAR_NOTIFY), "Time (in seconds) we should wait to start the round after enough players have joined" )
 GM.FlashlightBattery = CreateConVar("mu_flashlight_battery", 10, bit.bor(FCVAR_NOTIFY), "How long the flashlight should last in seconds (0 for infinite)" )
 GM.Language = CreateConVar("mu_language", "", bit.bor(FCVAR_NOTIFY), "The language Murder should use" )
+GM.RoundMaxLength = CreateConVar("mu_round_length", -1, bit.bor(FCVAR_NOTIFY), "How long are the rounds in seconds? (-1 to disable)" )
 
 -- replicated
 GM.ShowAdminsOnScoreboard = CreateConVar("mu_scoreboard_show_admins", 1, bit.bor(0), "Should show admins on scoreboard" )
