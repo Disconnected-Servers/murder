@@ -144,7 +144,7 @@ function GM:RoundThink()
 			self:StartNewRound()
 
 			for _, ply in pairs(player.GetAll()) do
-				ply.MurdererLastKill = 0
+				ply.MurdererLastKill = nil
 			end
 		end
 	end	

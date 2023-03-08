@@ -6,8 +6,7 @@ local folders = {
 for k, folder in pairs(folders) do
 	local files, subfolders = file.Find(folder .. "*", "LUA")
 	for k, filename in pairs(files) do
-		if filename:sub(1, 3) == "cl_" or filename:sub(1, 3) == "sh_" or filename == "shared.lua"
-			or folder:match("/sh_") or folder:match("/cl_") then
+		if filename:sub(1, 3) == "cl_" or filename:sub(1, 3) == "sh_" or filename == "shared.lua" or folder:match("/sh_") or folder:match("/cl_") then
 			AddCSLuaFile(folder .. filename)
 		end
 	end
