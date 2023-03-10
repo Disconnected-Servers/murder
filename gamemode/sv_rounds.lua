@@ -229,7 +229,7 @@ function GM:EndTheRound(reason, murderers)
 	end
 
 	if reason == 3 then
-		if murderers >= 1 then
+		if #murderers >= 1 then
 			local hasAMurderer = false 
 
 			for _, ply in pairs(murderers) do
